@@ -9,16 +9,15 @@
 - Anett Yomali Vera Carbajal
 
 ## Descripción del Sistema
-El proyecto DORECO (Donación y Reciclaje en la Comunidad Universitaria) es un sistema orientado a promover la cultura del reciclaje, consumo responsable, reutilización y apoyo colaborativo dentro de la comunidad universitaria.  \ 
-El sistema permite a los estudiantes publicar objetos que ya no utilizan, tales como ropa, libros o útiles escolares, con la finalidad de donarlos, venderlos o prestarlos con otros compañeros.  \ 
-\  
-Entre sus principales funcionalidades se encuentran:  \ 
+El proyecto DORECO (Donación y Reciclaje en la Comunidad Universitaria) es un sistema orientado a promover la cultura del reciclaje, consumo responsable, reutilización y apoyo colaborativo dentro de la comunidad universitaria.  
+El sistema permite a los estudiantes publicar objetos que ya no utilizan, tales como ropa, libros o útiles escolares, con la finalidad de donarlos, venderlos o prestarlos con otros compañeros.  
+Entre sus principales funcionalidades se encuentran:  
 - Registro de objetos con fotografías, descripciones, estado, categoría.
 - Búsqueda y filtrado de objetos disponibles.
 - Generación de códigos QR para acceso rápido a la información de cada artículo.
 - Módulo de administración para la gestión de categorías, control de publicaciones y reportes sobre el destino de los objetos (donados, vendidos, prestados).
 
-Esta es la parte backend del proyecto, desarrollada en Python utilizando el framework Django, encargada de manejar la lógica del sistema, interacción con la base de datos y administración de recursos.  \ 
+Esta es la parte backend del proyecto, desarrollada en Python utilizando el framework Django, encargada de manejar la lógica del sistema, interacción con la base de datos y administración de recursos.  
 
 ## Estructura de Carpetas
 ```bash
@@ -46,7 +45,7 @@ DORECO_back/
 ## Requisitos Previos
 - Python 3.x
 - Django
-- Base de datos MySQL
+- Servicio de MySQL
 
 ## Cómo Clonar y Correr el Proyecto
 ```bash
