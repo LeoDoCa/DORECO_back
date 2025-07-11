@@ -1,7 +1,6 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 
-User = get_user_model()
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -25,13 +24,13 @@ class CategorySuggestion(models.Model):
     
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    suggested_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    suggested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     admin_comment = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(blank=True, null=True)
     reviewed_by = models.ForeignKey(
-        User, 
+        settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True, 

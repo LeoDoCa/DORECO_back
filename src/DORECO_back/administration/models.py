@@ -1,9 +1,7 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
-
-User = get_user_model()
 
 class SystemStats(models.Model):
     """Modelo para almacenar estadísticas del sistema"""
@@ -38,7 +36,7 @@ class AdminAction(models.Model):
         ('resolve_report', 'Resolver reporte'),
     ]
     
-    admin_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    admin_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     action_type = models.CharField(max_length=30, choices=ACTION_TYPES)
     target_id = models.CharField(max_length=100)  # ID del objeto afectado
     description = models.TextField()

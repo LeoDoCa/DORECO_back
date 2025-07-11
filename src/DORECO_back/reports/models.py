@@ -1,8 +1,6 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from publications.models import Publication
-
-User = get_user_model()
 
 class Report(models.Model):
     REASON_CHOICES = [
@@ -21,14 +19,14 @@ class Report(models.Model):
     ]
     
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='reports')
-    reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_made')
+    reported_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reports_made')
     reason = models.CharField(max_length=20, choices=REASON_CHOICES)
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     
     # Administración
     reviewed_by = models.ForeignKey(
-        User, 
+        settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL, 
         null=True, 
         blank=True, 

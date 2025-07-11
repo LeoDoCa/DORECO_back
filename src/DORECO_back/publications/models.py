@@ -1,9 +1,7 @@
 import uuid
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from categories.models import Category
-
-User = get_user_model()
 
 class Publication(models.Model):
     TYPE_CHOICES = [
@@ -37,7 +35,7 @@ class Publication(models.Model):
     keywords = models.CharField(max_length=500, help_text="Palabras clave separadas por comas")
     
     # Relaciones
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='publications')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='publications')
     
     # Estados
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
@@ -86,7 +84,7 @@ class PublicationInteraction(models.Model):
     ]
     
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='interactions')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     interaction_type = models.CharField(max_length=20, choices=INTERACTION_TYPES)
     message = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

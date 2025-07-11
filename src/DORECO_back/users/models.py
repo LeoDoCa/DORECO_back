@@ -59,6 +59,16 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
         validators=[RegexValidator(r'^\+?1?\d{9,15}$', 'Número de teléfono inválido')]
     )
+    username = models.CharField(max_length=45, blank=False, null=False, unique=True, validators=[
+            MinLengthValidator(3, "El nombre de usuario debe tener al menos 3 caracteres"),
+            RegexValidator(
+                regex=r'^[a-zA-Z][a-zA-Z0-9_-]*$',
+                message="El nombre de usuario debe comenzar con una letra y solo puede contener letras, números, guiones y guiones bajos"
+            )
+        ],
+        error_messages={
+            'unique': 'Este nombre de usuario ya está en uso'
+        })
     token = models.CharField(max_length=255, blank=True, null=True)
     photo = models.ImageField(
         upload_to="user", 
@@ -83,7 +93,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["name", "surnames", "username"]
+    REQUIRED_FIELDS = ["name", "surnames", "email"]
 
     def __str__(self):
         return self.email
