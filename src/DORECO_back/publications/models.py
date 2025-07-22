@@ -33,6 +33,7 @@ class Publication(models.Model):
     publication_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     keywords = models.CharField(max_length=500, help_text="Palabras clave separadas por comas")
+    duration = models.DurationField(help_text="Duración del préstamo o disponibilidad", null=True, blank=True)
     
     # Relaciones
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='publications')
@@ -54,43 +55,15 @@ class Publication(models.Model):
     def get_keywords_list(self):
         return [keyword.strip() for keyword in self.keywords.split(',') if keyword.strip()]
 
-def publication_image_path(instance, filename):
-    return f'publications/{instance.publication.id}/{filename}'
 
-class PublicationImage(models.Model):
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to=publication_image_path)
-    alt_text = models.CharField(max_length=200, blank=True)
-    order = models.PositiveIntegerField(default=0)
+class Favorite(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='favorites')
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        ordering = ['order']
-        constraints = [
-            models.CheckConstraint(
-                check=models.Q(order__gte=0) & models.Q(order__lte=2),
-                name='max_3_images'
-            )
-        ]
+        unique_together = ['user', 'publication']
+        ordering = ['-created_at']
     
     def __str__(self):
-        return f"Imagen {self.order + 1} de {self.publication.title}"
-
-class PublicationInteraction(models.Model):
-    INTERACTION_TYPES = [
-        ('view', 'Vista'),
-        ('contact', 'Contacto'),
-        ('interest', 'Interés'),
-    ]
-    
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='interactions')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    interaction_type = models.CharField(max_length=20, choices=INTERACTION_TYPES)
-    message = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ['publication', 'user', 'interaction_type']
-    
-    def __str__(self):
-        return f"{self.user.username} - {self.get_interaction_type_display()} - {self.publication.title}"
+        return f"{self.user.username} - {self.publication.title}"

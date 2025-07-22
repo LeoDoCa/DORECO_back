@@ -93,7 +93,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["name", "surnames", "email"]
+    REQUIRED_FIELDS = ["name", "surnames"]
 
     def __str__(self):
         return self.email
