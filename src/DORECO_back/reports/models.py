@@ -33,12 +33,9 @@ class Report(models.Model):
         related_name='reports_reviewed'
     )
     admin_comment = models.TextField(blank=True, null=True)
-    resolution_action = models.CharField(max_length=200, blank=True, null=True)
     
     # Fechas
     created_at = models.DateTimeField(auto_now_add=True)
-    reviewed_at = models.DateTimeField(blank=True, null=True)
-    resolved_at = models.DateTimeField(blank=True, null=True)
     
     class Meta:
         unique_together = ['publication', 'reported_by']

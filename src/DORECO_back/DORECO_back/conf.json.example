@@ -1,0 +1,12 @@
+{
+    "base_url": "http://localhost:8000",
+    "secret_key": "9JJZ6uneQ6LBctPi31iIIgay/mn4BZp6It0PFBWQgz4=",
+    "debug": true,
+    "db": "doreco",
+    "user": "root",
+    "password": "root", 
+    "server": "localhost",
+    "puerto": "3306",
+    "email_user": "tu-email@gmail.com",
+    "email_password": "tu-password-de-aplicacion"
+} 
