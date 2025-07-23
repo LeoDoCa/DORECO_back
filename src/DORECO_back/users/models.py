@@ -11,6 +11,9 @@ from django.utils.timezone import now
 from django.core.validators import RegexValidator, MinLengthValidator, EmailValidator, FileExtensionValidator
 
 
+
+
+
 @receiver(user_logged_in)
 def update_last_login(sender, user, **kwargs):
     user.last_login = now()
