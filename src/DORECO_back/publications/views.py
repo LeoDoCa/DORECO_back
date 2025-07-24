@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from .models import Publication, Favorite
 from .serializers import (
     PublicationSerializer, PublicationListSerializer, FavoriteSerializer,
-    MyPublicationsSerializer
+    MyPublicationsSerializer, PublicationUpdateSerializer
 )
 
 
@@ -78,6 +78,8 @@ class PublicationViewSet(viewsets.ModelViewSet):
             return PublicationListSerializer
         elif self.action == 'my_publications':
             return MyPublicationsSerializer
+        elif self.action in ['update', 'partial_update']:
+            return PublicationUpdateSerializer
         return PublicationSerializer
     
     def perform_update(self, serializer):
@@ -114,16 +116,22 @@ class PublicationViewSet(viewsets.ModelViewSet):
             return Response({"error": "No puedes agregar tu propia publicación a favoritos"}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
-        favorite, created = Favorite.objects.get_or_create(
-            user=request.user, 
-            publication=publication
-        )
-        
-        if not created:
+        try:
+            favorite = Favorite.objects.get(user=request.user, publication=publication)
             favorite.delete()
-            return Response({"message": "Eliminado de favoritos", "is_favorite": False})
-        else:
-            return Response({"message": "Agregado a favoritos", "is_favorite": True})
+            return Response({
+                "message": "Eliminado de favoritos", 
+                "is_favorite": False,
+                "publication_id": str(publication.id)
+            })
+        except Favorite.DoesNotExist:
+            favorite = Favorite.objects.create(user=request.user, publication=publication)
+            return Response({
+                "message": "Agregado a favoritos", 
+                "is_favorite": True,
+                "publication_id": str(publication.id),
+                "favorite_id": favorite.id
+            }, status=status.HTTP_201_CREATED)
     
     @action(detail=True, methods=['patch'])
     def change_status(self, request, pk=None):
@@ -182,17 +190,13 @@ class FavoriteViewSet(viewsets.ModelViewSet):
             return Response({"error": "No puedes agregar tu propia publicación a favoritos"}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
-        favorite, created = Favorite.objects.get_or_create(
-            user=request.user, 
-            publication=publication
-        )
-        
-        if created:
-            serializer = FavoriteSerializer(favorite, context={'request': request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
+        if Favorite.objects.filter(user=request.user, publication=publication).exists():
             return Response({"error": "Ya está en favoritos"}, 
                           status=status.HTTP_400_BAD_REQUEST)
+        
+        favorite = Favorite.objects.create(user=request.user, publication=publication)
+        serializer = FavoriteSerializer(favorite, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     @action(detail=False, methods=['delete'])
     def remove_favorite(self, request):
@@ -205,7 +209,10 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         try:
             favorite = Favorite.objects.get(user=request.user, publication_id=publication_id)
             favorite.delete()
-            return Response({"message": "Eliminado de favoritos"})
+            return Response({
+                "message": "Eliminado de favoritos",
+                "publication_id": str(publication_id)
+            })
         except Favorite.DoesNotExist:
             return Response({"error": "No está en favoritos"}, 
                           status=status.HTTP_404_NOT_FOUND)

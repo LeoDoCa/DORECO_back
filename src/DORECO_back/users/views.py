@@ -66,7 +66,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     
     def get_serializer_class(self):
         """Usar diferentes serializers según la acción"""
-        if self.action == 'profile':
+        if self.action in ['profile', 'update_profile']:
             return UserProfileSerializer
         elif self.action == 'change_password':
             return ChangePasswordSerializer

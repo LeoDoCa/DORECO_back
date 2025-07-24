@@ -12,5 +12,6 @@ urlpatterns = [
     
     # URLs adicionales
     path('api/categories/active/', CategoryViewSet.as_view({'get': 'active'}), name='categories-active'),
+    path('api/categories/suggested/', CategoryViewSet.as_view({'get': 'suggested'}), name='categories-suggested'),
     path('api/categories/<int:pk>/toggle-status/', CategoryViewSet.as_view({'post': 'toggle_status'}), name='categories-toggle-status'),
 ]
