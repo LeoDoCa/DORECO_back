@@ -18,6 +18,13 @@ class CategorySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Ya existe una categoría con este nombre.")
         return value
 
+    def create(self, validated_data):
+        # Los usuarios normales crean categorías como sugerencias (inactivas)
+        request = self.context.get('request')
+        if request and not (request.user.is_staff or request.user.is_admin):
+            validated_data['is_active'] = False
+        return super().create(validated_data)
+
 
 class CategoryListSerializer(serializers.ModelSerializer):
     """Serializer simplificado para listar categorías"""

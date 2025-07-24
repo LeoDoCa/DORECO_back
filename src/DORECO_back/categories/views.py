@@ -15,9 +15,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     
     def get_permissions(self):
-        """Permisos: lectura para todos, escritura solo para admins"""
+        """Permisos: lectura para todos, crear para autenticados, otras acciones solo para admins"""
         if self.action in ['list', 'retrieve']:
             self.permission_classes = [permissions.AllowAny]
+        elif self.action == 'create':
+            self.permission_classes = [permissions.IsAuthenticated]
         else:
             self.permission_classes = [permissions.IsAuthenticated]
         return super().get_permissions()
@@ -54,9 +56,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return CategorySerializer
     
     def perform_create(self, serializer):
-        """Solo administradores pueden crear categorías"""
-        if not (self.request.user.is_staff or self.request.user.is_admin):
-            raise PermissionError("Solo los administradores pueden crear categorías.")
+        """Usuarios autenticados pueden sugerir categorías (inactivas), admins pueden crear activas"""
+        # Los usuarios normales crean categorías como sugerencias (inactivas)
+        # Los admins pueden crear categorías activas directamente
         serializer.save()
     
     def perform_update(self, serializer):
@@ -71,8 +73,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
             raise PermissionError("Solo los administradores pueden eliminar categorías.")
         
         # Verificar que no tenga publicaciones asociadas
-        if instance.publication_set.exists():
-            raise ValueError("No se puede eliminar una categoría que tiene publicaciones asociadas.")
+        publications_count = instance.publication_set.count()
+        if publications_count > 0:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError(
+                f"No se puede eliminar una categoría que tiene {publications_count} publicaciones asociadas."
+            )
         
         instance.delete()
     
@@ -98,4 +104,18 @@ class CategoryViewSet(viewsets.ModelViewSet):
         category.save()
         
         serializer = CategorySerializer(category)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def suggested(self, request):
+        """Obtener categorías sugeridas (inactivas) para revisión de admins"""
+        if not (request.user.is_staff or request.user.is_admin):
+            return Response({"error": "No tienes permisos para ver categorías sugeridas"}, 
+                          status=403)
+        
+        suggested_categories = Category.objects.filter(is_active=False).annotate(
+            publications_count=Count('publication')
+        ).order_by('-created_at')
+        
+        serializer = CategorySerializer(suggested_categories, many=True)
         return Response(serializer.data)

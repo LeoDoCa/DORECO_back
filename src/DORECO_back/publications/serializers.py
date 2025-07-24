@@ -26,7 +26,7 @@ class PublicationSerializer(serializers.ModelSerializer):
             'owner', 'owner_name', 'status', 'is_active', 'created_at', 'updated_at',
             'is_favorite', 'favorites_count'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'owner_name', 'category_name', 'is_favorite', 'favorites_count']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'owner', 'owner_name', 'category_name', 'is_favorite', 'favorites_count']
 
     def get_is_favorite(self, obj):
         """Verificar si la publicación es favorita del usuario actual"""
@@ -36,8 +36,8 @@ class PublicationSerializer(serializers.ModelSerializer):
         return False
 
     def validate_category(self, value):
-        if not value.is_active:
-            raise serializers.ValidationError("No se puede asignar una categoría inactiva.")
+        # Permitir uso de categorías inactivas (sugeridas por usuarios)
+        # La validación se hará en el negocio si es necesario
         return value
 
     def validate_price(self, value):
@@ -61,12 +61,55 @@ class PublicationSerializer(serializers.ModelSerializer):
         
         # Asignar el usuario autenticado como propietario
         validated_data['owner'] = self.context['request'].user
+        
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         keywords_list = validated_data.pop('keywords_list', None)
         if keywords_list is not None:
             validated_data['keywords'] = ', '.join(keywords_list)
+        
+        # No permitir cambiar el propietario en actualizaciones
+        validated_data.pop('owner', None)
+        
+        return super().update(instance, validated_data)
+
+
+class PublicationUpdateSerializer(serializers.ModelSerializer):
+    """Serializer específico para actualizar publicaciones"""
+    keywords_list = serializers.ListField(
+        child=serializers.CharField(max_length=100),
+        write_only=True,
+        required=False
+    )
+    
+    class Meta:
+        model = Publication
+        fields = [
+            'title', 'description', 'category', 'condition',
+            'publication_type', 'price', 'keywords', 'keywords_list', 'duration',
+            'status', 'is_active'
+        ]
+
+    def validate_price(self, value):
+        publication_type = self.initial_data.get('publication_type', self.instance.publication_type)
+        if publication_type == 'sale' and (not value or value <= 0):
+            raise serializers.ValidationError("El precio es requerido para publicaciones de venta.")
+        elif publication_type in ['donation', 'loan'] and value:
+            raise serializers.ValidationError("Las donaciones y préstamos no deben tener precio.")
+        return value
+
+    def validate_duration(self, value):
+        publication_type = self.initial_data.get('publication_type', self.instance.publication_type)
+        if publication_type == 'loan' and not value:
+            raise serializers.ValidationError("La duración es requerida para préstamos.")
+        return value
+
+    def update(self, instance, validated_data):
+        keywords_list = validated_data.pop('keywords_list', None)
+        if keywords_list is not None:
+            validated_data['keywords'] = ', '.join(keywords_list)
+        
         return super().update(instance, validated_data)
 
 

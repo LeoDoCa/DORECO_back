@@ -18,4 +18,5 @@ urlpatterns = [
     path('auth/update-profile/', CustomUserViewSet.as_view({'put': 'update_profile', 'patch': 'update_profile'}), name='user-update-profile'),
     path('auth/change-password/', CustomUserViewSet.as_view({'post': 'change_password'}), name='user-change-password'),
     path('auth/search/', CustomUserViewSet.as_view({'get': 'search'}), name='user-search'),
+    path('auth/register/', CustomUserViewSet.as_view({'post': 'register'}), name='user-register'),
 ]

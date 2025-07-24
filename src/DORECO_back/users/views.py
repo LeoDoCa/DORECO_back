@@ -49,7 +49,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """Permisos específicos por acción"""
-        if self.action == 'create':
+        if self.action in ['create', 'register', 'login']:
             self.permission_classes = [AllowAny]
         elif self.action in ['list', 'destroy']:
             self.permission_classes = [IsAuthenticated]
@@ -66,7 +66,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     
     def get_serializer_class(self):
         """Usar diferentes serializers según la acción"""
-        if self.action == 'profile':
+        if self.action in ['profile', 'update_profile']:
             return UserProfileSerializer
         elif self.action == 'change_password':
             return ChangePasswordSerializer
@@ -92,6 +92,15 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def register(self, request):
+        """Endpoint para registrar nuevos usuarios"""
+        serializer = CustomUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response(UserProfileSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+     
     @action(detail=False, methods=['post'])
     def logout(self, request):
         """Endpoint para logout"""
