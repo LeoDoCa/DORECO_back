@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'publications',
     'categories',
     'reports',
-    'administration',
 ]
 
 REST_FRAMEWORK = {
