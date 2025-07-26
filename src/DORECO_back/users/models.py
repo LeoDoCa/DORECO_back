@@ -10,7 +10,6 @@ from django.dispatch.dispatcher import receiver
 from django.utils.timezone import now
 from django.core.validators import RegexValidator, MinLengthValidator, EmailValidator, FileExtensionValidator
 
-
 @receiver(user_logged_in)
 def update_last_login(sender, user, **kwargs):
     user.last_login = now()
@@ -30,7 +29,6 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(email, password, **extra_fields)
-
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=60, blank=False, null=False, validators=[
             MinLengthValidator(2, "El nombre debe tener al menos 2 caracteres"),
