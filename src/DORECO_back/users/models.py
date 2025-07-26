@@ -11,9 +11,6 @@ from django.utils.timezone import now
 from django.core.validators import RegexValidator, MinLengthValidator, EmailValidator, FileExtensionValidator
 
 
-
-
-
 @receiver(user_logged_in)
 def update_last_login(sender, user, **kwargs):
     user.last_login = now()
@@ -53,7 +50,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         unique=True, 
         blank=False, 
         null=False, 
-        validators=[EmailValidator(message="Ingrese un correo electrónico válido")],
+        validators=[
+            EmailValidator(message="Ingrese un correo electrónico válido"),
+            RegexValidator(
+                regex=r'^[\w\.-]+@utez\.edu\.mx$',
+                message="El correo debe pertenecer al dominio @utez.edu.mx"
+            )
+        ],
         error_messages={'unique': 'Ya existe un usuario con este correo electrónico'}
     )
     phone_number = models.CharField(

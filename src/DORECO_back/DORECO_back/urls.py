@@ -36,7 +36,6 @@ urlpatterns = [
     path('', include('categories.urls')),
     path('', include('publications.urls')),
     path('', include('reports.urls')),
-    path('', include('administration.urls')),
 ]
 
 # Servir archivos estáticos y media en desarrollo
