@@ -58,8 +58,15 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        from .models import Role
         validated_data.pop('password_confirm', None)
         password = validated_data.pop('password')
+        # Asignar siempre el rol USER (id=2)
+        try:
+            user_role = Role.objects.get(id=2)
+        except Role.DoesNotExist:
+            raise serializers.ValidationError("El rol USER (id=2) no existe en la base de datos.")
+        validated_data['role'] = user_role
         user = CustomUser.objects.create_user(password=password, **validated_data)
         return user
 

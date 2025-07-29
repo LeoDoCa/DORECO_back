@@ -17,6 +17,9 @@ class PublicationSerializer(serializers.ModelSerializer):
     )
     is_favorite = serializers.SerializerMethodField()
     favorites_count = serializers.IntegerField(read_only=True)
+    image1 = serializers.ImageField(required=True)
+    image2 = serializers.ImageField(required=False, allow_null=True)
+    image3 = serializers.ImageField(required=False, allow_null=True)
     
     class Meta:
         model = Publication
@@ -24,7 +27,8 @@ class PublicationSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'category', 'category_name', 'condition',
             'publication_type', 'price', 'keywords', 'keywords_list', 'duration',
             'owner', 'owner_name', 'status', 'is_active', 'created_at', 'updated_at',
-            'is_favorite', 'favorites_count'
+            'is_favorite', 'favorites_count',
+            'image1', 'image2', 'image3',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'owner', 'owner_name', 'category_name', 'is_favorite', 'favorites_count']
 
@@ -34,6 +38,15 @@ class PublicationSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return Favorite.objects.filter(user=request.user, publication=obj).exists()
         return False
+
+    def validate(self, attrs):
+        images = [attrs.get('image1'), attrs.get('image2'), attrs.get('image3')]
+        images = [img for img in images if img]
+        if len(images) < 1:
+            raise serializers.ValidationError("Debes subir al menos una imagen.")
+        if len(images) > 3:
+            raise serializers.ValidationError("No puedes subir más de 3 imágenes.")
+        return attrs
 
     def validate_category(self, value):
         # Permitir uso de categorías inactivas (sugeridas por usuarios)
@@ -58,8 +71,6 @@ class PublicationSerializer(serializers.ModelSerializer):
         keywords_list = validated_data.pop('keywords_list', [])
         if keywords_list:
             validated_data['keywords'] = ', '.join(keywords_list)
-        
-        # Asignar el usuario autenticado como propietario
         validated_data['owner'] = self.context['request'].user
         
         return super().create(validated_data)
@@ -69,10 +80,13 @@ class PublicationSerializer(serializers.ModelSerializer):
         if keywords_list is not None:
             validated_data['keywords'] = ', '.join(keywords_list)
         
-        # No permitir cambiar el propietario en actualizaciones
         validated_data.pop('owner', None)
+        for img_field in ['image1', 'image2', 'image3']:
+            if img_field in validated_data:
+                setattr(instance, img_field, validated_data[img_field])
         
-        return super().update(instance, validated_data)
+        instance.save()
+        return instance
 
 
 class PublicationUpdateSerializer(serializers.ModelSerializer):
@@ -122,8 +136,10 @@ class PublicationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publication
         fields = [
-            'id', 'title', 'condition', 'publication_type', 'price',
-            'owner_name', 'category_name', 'status', 'created_at', 'is_favorite'
+            'id', 'title', 'description', 'condition', 'publication_type', 'price',
+            'duration', 'keywords',
+            'owner_name', 'category_name', 'status', 'created_at', 'is_favorite',
+            'image1', 'image2', 'image3'
         ]
         read_only_fields = fields
 
@@ -139,14 +155,15 @@ class FavoriteSerializer(serializers.ModelSerializer):
     publication_title = serializers.CharField(source='publication.title', read_only=True)
     publication_type = serializers.CharField(source='publication.publication_type', read_only=True)
     owner_name = serializers.CharField(source='publication.owner.username', read_only=True)
+    publication_data = PublicationListSerializer(source="publication", read_only=True)
     
     class Meta:
         model = Favorite
         fields = [
             'id', 'publication', 'publication_title', 'publication_type',
-            'owner_name', 'created_at'
+            'owner_name', 'created_at', 'publication_data'
         ]
-        read_only_fields = ['id', 'created_at', 'publication_title', 'publication_type', 'owner_name']
+        read_only_fields = ['id', 'created_at', 'publication_title', 'publication_type', 'owner_name', 'publication_data']
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user

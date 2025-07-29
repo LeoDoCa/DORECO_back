@@ -37,6 +37,11 @@ class Publication(models.Model):
     
     # Relaciones
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='publications')
+
+    # Imágenes (hasta 3)
+    image1 = models.ImageField(upload_to='publications/', null=False, blank=False)
+    image2 = models.ImageField(upload_to='publications/', null=True, blank=True)
+    image3 = models.ImageField(upload_to='publications/', null=True, blank=True)
     
     # Estados
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
