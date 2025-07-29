@@ -29,14 +29,12 @@ class PublicationViewSet(viewsets.ModelViewSet):
             favorites_count=Count('favorites')
         )
         
-        # Filtro base: solo publicaciones activas y disponibles para usuarios no autenticados
         if not self.request.user.is_authenticated:
             queryset = queryset.filter(is_active=True, status='available')
         elif not (self.request.user.is_staff or self.request.user.is_admin):
             # Usuarios autenticados ven todas las activas
             queryset = queryset.filter(is_active=True)
         
-        # Filtros de búsqueda
         search = self.request.query_params.get('search', None)
         if search:
             queryset = queryset.filter(
@@ -45,27 +43,22 @@ class PublicationViewSet(viewsets.ModelViewSet):
                 Q(keywords__icontains=search)
             )
         
-        # Filtro por categoría
         category = self.request.query_params.get('category', None)
         if category:
             queryset = queryset.filter(category_id=category)
         
-        # Filtro por tipo de publicación
         publication_type = self.request.query_params.get('type', None)
         if publication_type:
             queryset = queryset.filter(publication_type=publication_type)
         
-        # Filtro por condición
         condition = self.request.query_params.get('condition', None)
         if condition:
             queryset = queryset.filter(condition=condition)
         
-        # Filtro por estado
         status_filter = self.request.query_params.get('status', None)
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         
-        # Filtro por propietario
         owner = self.request.query_params.get('owner', None)
         if owner:
             queryset = queryset.filter(owner_id=owner)
