@@ -9,8 +9,10 @@ from django.db.models import Q
 from .models import CustomUser, Role
 from .serializers import (
     CustomUserSerializer, RoleSerializer, UserLoginSerializer,
-    UserProfileSerializer, ChangePasswordSerializer
+    UserProfileSerializer, ChangePasswordSerializer,
+    PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 )
+from .utils import create_and_send_password_reset
 
 
 class RoleViewSet(viewsets.ModelViewSet):
@@ -49,7 +51,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """Permisos específicos por acción"""
-        if self.action in ['create', 'register', 'login']:
+        if self.action in ['create', 'register', 'login', 'password_reset_request', 'password_reset_confirm', 'verify_reset_token']:
             self.permission_classes = [AllowAny]
         elif self.action in ['list', 'destroy']:
             self.permission_classes = [IsAuthenticated]
@@ -157,3 +159,66 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             serializer = UserProfileSerializer(users, many=True)
             return Response(serializer.data)
         return Response([])
+    
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def password_reset_request(self, request):
+        """Solicitar recuperación de contraseña por email"""
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            user = CustomUser.objects.get(email=email, is_active=True)
+            
+            # Crear token y enviar email
+            success, message = create_and_send_password_reset(user, request)
+            
+            if success:
+                return Response({
+                    "message": "Si el correo electrónico existe en nuestro sistema, recibirás un enlace de recuperación."
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "error": "Hubo un problema al enviar el email. Inténtalo de nuevo más tarde."
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def password_reset_confirm(self, request):
+        """Confirmar y cambiar contraseña con token"""
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                "message": "Contraseña restablecida exitosamente. Ya puedes iniciar sesión con tu nueva contraseña."
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def verify_reset_token(self, request):
+        """Verificar si un token de reset es válido"""
+        token = request.query_params.get('token')
+        if not token:
+            return Response({
+                "error": "Token es requerido"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = CustomUser.objects.get(token=token)
+            if user.is_token_valid():
+                return Response({
+                    "valid": True,
+                    "user_email": user.email,
+                    "expires_at": user.token_expires_at
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "valid": False,
+                    "error": "El token ha expirado o ya fue utilizado"
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except CustomUser.DoesNotExist:
+            return Response({
+                "valid": False,
+                "error": "Token inválido"
+            }, status=status.HTTP_400_BAD_REQUEST)

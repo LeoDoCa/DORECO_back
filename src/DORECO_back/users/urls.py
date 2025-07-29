@@ -19,4 +19,9 @@ urlpatterns = [
     path('auth/change-password/', CustomUserViewSet.as_view({'post': 'change_password'}), name='user-change-password'),
     path('auth/search/', CustomUserViewSet.as_view({'get': 'search'}), name='user-search'),
     path('auth/register/', CustomUserViewSet.as_view({'post': 'register'}), name='user-register'),
+    
+    # URLs para recuperación de contraseña
+    path('auth/password-reset-request/', CustomUserViewSet.as_view({'post': 'password_reset_request'}), name='password-reset-request'),
+    path('auth/password-reset-confirm/', CustomUserViewSet.as_view({'post': 'password_reset_confirm'}), name='password-reset-confirm'),
+    path('auth/verify-reset-token/', CustomUserViewSet.as_view({'get': 'verify_reset_token'}), name='verify-reset-token'),
 ]

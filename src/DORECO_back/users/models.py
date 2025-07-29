@@ -9,6 +9,8 @@ from django.db.models.signals import post_migrate
 from django.dispatch.dispatcher import receiver
 from django.utils.timezone import now
 from django.core.validators import RegexValidator, MinLengthValidator, EmailValidator, FileExtensionValidator
+import uuid
+from datetime import timedelta
 
 @receiver(user_logged_in)
 def update_last_login(sender, user, **kwargs):
@@ -74,6 +76,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             'unique': 'Este nombre de usuario ya está en uso'
         })
     token = models.CharField(max_length=255, blank=True, null=True)
+    token_expires_at = models.DateTimeField(blank=True, null=True)
     photo = models.ImageField(
         upload_to="user", 
         default="default.png", 
@@ -98,6 +101,25 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name", "surnames"]
+
+    def generate_password_reset_token(self):
+        """Genera un token de recuperación de contraseña para este usuario"""
+        self.token = str(uuid.uuid4())
+        self.token_expires_at = now() + timedelta(hours=1)
+        self.save()
+        return self.token
+
+    def is_token_valid(self):
+        """Verifica si el token de recuperación es válido"""
+        if not self.token or not self.token_expires_at:
+            return False
+        return now() < self.token_expires_at
+
+    def clear_reset_token(self):
+        """Limpia el token de recuperación después de usarlo"""
+        self.token = None
+        self.token_expires_at = None
+        self.save()
 
     def __str__(self):
         return self.email
@@ -124,3 +146,5 @@ class Role(models.Model):
         db_table = "role"
         verbose_name = "Role"
         verbose_name_plural = "Roles"
+
+
