@@ -31,7 +31,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'photo', 'role', 'role_name', 'status', 'created_at', 'updated_at', 
             'is_admin', 'is_active', 'is_staff', 'password', 'password_confirm'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'role_name']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'role_name', 'token', 'token_expires_at']
         extra_kwargs = {
             'password': {'write_only': True},
             'password_confirm': {'write_only': True},
@@ -116,7 +116,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'id', 'name', 'surnames', 'email', 'phone_number', 'username', 
             'photo', 'role_name', 'created_at'
         ]
-        read_only_fields = ['id', 'email', 'created_at', 'role_name']
+        read_only_fields = ['id', 'email', 'created_at', 'role_name', 'token', 'token_expires_at']
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -134,4 +134,51 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = self.context['request'].user
         if not user.check_password(value):
             raise serializers.ValidationError("La contraseña actual es incorrecta.")
-        return value 
+        return value
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """Serializer para solicitar recuperación de contraseña"""
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value):
+        try:
+            CustomUser.objects.get(email=value, is_active=True)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("No existe una cuenta activa con este correo electrónico.")
+        return value
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Serializer para confirmar y cambiar contraseña con token"""
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password])
+    new_password_confirm = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['new_password_confirm']:
+            raise serializers.ValidationError("Las contraseñas no coinciden.")
+        return attrs
+
+    def validate_token(self, value):
+        try:
+            user = CustomUser.objects.get(token=value)
+            if not user.is_token_valid():
+                raise serializers.ValidationError("El token es inválido o ha expirado.")
+            return value
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("Token inválido.")
+
+    def save(self):
+        token = self.validated_data['token']
+        new_password = self.validated_data['new_password']
+        
+        user = CustomUser.objects.get(token=token)
+        
+        # Cambiar la contraseña
+        user.set_password(new_password)
+        
+        # Limpiar el token de recuperación
+        user.clear_reset_token()
+        
+        return user 
