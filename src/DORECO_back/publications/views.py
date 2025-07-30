@@ -3,6 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.conf import settings
+import qrcode
+import io
+import base64
 from .models import Publication, Favorite
 from .serializers import (
     PublicationSerializer, PublicationListSerializer, FavoriteSerializer,
@@ -146,6 +151,60 @@ class PublicationViewSet(viewsets.ModelViewSet):
         
         serializer = PublicationSerializer(publication, context={'request': request})
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])
+    def generate_qr(self, request, pk=None):
+        """Generar código QR para una publicación específica"""
+        try:
+            publication = self.get_object()
+            
+            # Construir la URL de la publicación
+            # Usar BASE_URL desde settings o construir URL base
+            base_url = getattr(settings, 'BASE_URL', 'http://localhost:3000')
+            publication_url = f"{base_url}/publication/{publication.id}"
+            
+            # Crear el código QR
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(publication_url)
+            qr.make(fit=True)
+            
+            # Crear la imagen del QR
+            qr_image = qr.make_image(fill_color="black", back_color="white")
+            
+            # Convertir la imagen a bytes
+            img_buffer = io.BytesIO()
+            qr_image.save(img_buffer, format='PNG')
+            img_buffer.seek(0)
+            
+            # Devolver opciones: imagen directa o base64
+            response_format = request.query_params.get('format', 'image')
+            
+            if response_format == 'base64':
+                # Retornar como base64 JSON
+                img_base64 = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
+                return Response({
+                    'qr_code': f"data:image/png;base64,{img_base64}",
+                    'publication_url': publication_url,
+                    'publication_id': str(publication.id),
+                    'publication_title': publication.title
+                })
+            else:
+                # Retornar imagen directamente
+                response = HttpResponse(img_buffer.getvalue(), content_type='image/png')
+                response['Content-Disposition'] = f'inline; filename="qr_publication_{publication.id}.png"'
+                return response
+                
+        except Publication.DoesNotExist:
+            return Response({"error": "Publicación no encontrada"}, 
+                          status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Error al generar QR: {str(e)}"}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
