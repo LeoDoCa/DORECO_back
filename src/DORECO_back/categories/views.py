@@ -65,7 +65,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
         """Solo administradores pueden actualizar categorías"""
         if not (self.request.user.is_staff or self.request.user.is_admin):
             raise PermissionError("Solo los administradores pueden actualizar categorías.")
-        serializer.save()
+        # Permitir poner is_active en None (rechazo)
+        instance = serializer.save()
+        if 'is_active' in self.request.data and self.request.data['is_active'] in [None, '', 'null', 'None']:
+            instance.is_active = None
+            instance.save()
     
     def perform_destroy(self, instance):
         """Solo administradores pueden eliminar categorías"""

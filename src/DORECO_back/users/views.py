@@ -48,6 +48,27 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     """ViewSet para gestionar usuarios"""
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+
+    @action(detail=False, methods=['get'])
+    def statistics(self, request):
+        """Estadísticas generales para dashboard"""
+        from publications.models import Publication
+        from reports.models import Report
+        from .models import CustomUser
+        total_users = CustomUser.objects.count()
+        total_active_publications = Publication.objects.filter(is_active=True).count()
+        total_sold = Publication.objects.filter(publication_type='sale').count()
+        total_loaned = Publication.objects.filter(publication_type='loan').count()
+        total_donated = Publication.objects.filter(publication_type='donation').count()
+        pending_reports = Report.objects.filter(status='pending').count()
+        return Response({
+            "total_users": total_users,
+            "total_active_publications": total_active_publications,
+            "total_sold": total_sold,
+            "total_loaned": total_loaned,
+            "total_donated": total_donated,
+            "pending_reports": pending_reports,
+        })
     
     def get_permissions(self):
         """Permisos específicos por acción"""
