@@ -214,3 +214,7 @@ QR_CODE_CACHE_ALIAS = 'default'
 QR_CODE_URL_PROTECTION = {
     'SIGNED_TOKEN_TTL': 3600,  
 }
+
+# Frontend settings para password reset
+FRONTEND_DOMAIN = 'localhost:3000'  # Cambiar en producción
+FRONTEND_PROTOCOL = 'http'  # Cambiar a 'https' en producción

@@ -24,15 +24,11 @@ def send_password_reset_email(user, token, request=None):
     Envía email de recuperación de contraseña al usuario
     """
     try:
-        # Construir URL de reset
-        if request:
-            domain = request.get_host()
-            protocol = 'https' if request.is_secure() else 'http'
-        else:
-            domain = getattr(settings, 'FRONTEND_DOMAIN', 'localhost:3000')
-            protocol = 'http'
+        # Construir URL de reset - siempre apuntar al frontend React
+        frontend_domain = getattr(settings, 'FRONTEND_DOMAIN', 'localhost:3000')
+        frontend_protocol = getattr(settings, 'FRONTEND_PROTOCOL', 'http')
         
-        reset_url = f"{protocol}://{domain}/reset-password?token={token}"
+        reset_url = f"{frontend_protocol}://{frontend_domain}/reset-password?token={token}"
         
         # Preparar contexto para el template
         context = {
