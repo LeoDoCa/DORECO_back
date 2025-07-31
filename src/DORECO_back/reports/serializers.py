@@ -90,7 +90,6 @@ class AdminReportSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        # Asignar el usuario actual como reviewer si se cambia el estado
         if 'status' in validated_data and validated_data['status'] != instance.status:
             validated_data['reviewed_by'] = self.context['request'].user
         return super().update(instance, validated_data)
@@ -104,7 +103,7 @@ class ReportListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = [
-            'id', 'publication_title', 'reported_by_username', 'reason',
+            'id', 'publication_title', 'reported_by_username', 'publication_id','reason',
             'status', 'created_at'
         ]
         read_only_fields = fields 

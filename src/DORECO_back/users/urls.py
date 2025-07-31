@@ -24,4 +24,7 @@ urlpatterns = [
     path('auth/password-reset-request/', CustomUserViewSet.as_view({'post': 'password_reset_request'}), name='password-reset-request'),
     path('auth/password-reset-confirm/', CustomUserViewSet.as_view({'post': 'password_reset_confirm'}), name='password-reset-confirm'),
     path('auth/verify-reset-token/', CustomUserViewSet.as_view({'get': 'verify_reset_token'}), name='verify-reset-token'),
+
+    # URL para estadísticas del dashboard
+    path('api/users/statistics/', CustomUserViewSet.as_view({'get': 'statistics'}), name='users-statistics'),
 ]

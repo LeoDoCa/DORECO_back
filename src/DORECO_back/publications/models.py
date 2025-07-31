@@ -33,7 +33,7 @@ class Publication(models.Model):
     publication_type = models.CharField(max_length=20, choices=TYPE_CHOICES)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     keywords = models.CharField(max_length=500, help_text="Palabras clave separadas por comas")
-    duration = models.DurationField(help_text="Duración del préstamo o disponibilidad", null=True, blank=True)
+    duration = models.PositiveSmallIntegerField(help_text="Duración del préstamo o disponibilidad", null=True, blank=True)
     
     # Relaciones
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='publications')

@@ -9,6 +9,7 @@ User = get_user_model()
 class PublicationSerializer(serializers.ModelSerializer):
     """Serializer para el modelo Publication"""
     owner_name = serializers.CharField(source='owner.username', read_only=True)
+    owner_photo = serializers.ImageField(source='owner.photo', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     keywords_list = serializers.ListField(
         child=serializers.CharField(max_length=100),
@@ -26,11 +27,11 @@ class PublicationSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'category', 'category_name', 'condition',
             'publication_type', 'price', 'keywords', 'keywords_list', 'duration',
-            'owner', 'owner_name', 'status', 'is_active', 'created_at', 'updated_at',
+            'owner', 'owner_name', 'owner_photo', 'status', 'is_active', 'created_at', 'updated_at',
             'is_favorite', 'favorites_count',
             'image1', 'image2', 'image3',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'owner', 'owner_name', 'category_name', 'is_favorite', 'favorites_count']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'owner', 'owner_name', 'owner_photo', 'category_name', 'is_favorite', 'favorites_count']
 
     def get_is_favorite(self, obj):
         """Verificar si la publicación es favorita del usuario actual"""
@@ -137,7 +138,7 @@ class PublicationListSerializer(serializers.ModelSerializer):
         model = Publication
         fields = [
             'id', 'title', 'description', 'condition', 'publication_type', 'price',
-            'duration', 'keywords',
+            'duration', 'keywords','is_active',
             'owner_name', 'category_name', 'status', 'created_at', 'is_favorite',
             'image1', 'image2', 'image3'
         ]
