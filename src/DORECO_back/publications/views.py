@@ -5,13 +5,16 @@ from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 import qrcode
 import io
 import base64
 from .models import Publication, Favorite
 from .serializers import (
     PublicationSerializer, PublicationListSerializer, FavoriteSerializer,
-    MyPublicationsSerializer, PublicationUpdateSerializer
+    MyPublicationsSerializer, PublicationUpdateSerializer, SendMessageSerializer
 )
 
 
@@ -214,6 +217,69 @@ class PublicationViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         except Publication.DoesNotExist:
             return Response({"error": "Publicación no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def send_message(self, request, pk=None):
+        """Enviar mensaje al propietario de una publicación"""
+        publication = self.get_object()
+        
+        # Verificar que el usuario no sea el propietario
+        if publication.owner == request.user:
+            return Response(
+                {"error": "No puedes enviarte mensajes a ti mismo"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Validar los datos del mensaje
+        serializer = SendMessageSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Datos validados
+        message_content = serializer.validated_data['message']
+        
+        # Obtener teléfono del usuario que envía el mensaje
+        sender_phone = request.user.phone_number or ''
+        
+        # Preparar datos para el template
+        context = {
+            'owner_name': publication.owner.name,
+            'sender_name': f"{request.user.name} {request.user.surnames}",
+            'sender_email': request.user.email,
+            'sender_phone': sender_phone,
+            'message': message_content,
+            'publication_title': publication.title,
+            'publication_type': publication.get_publication_type_display(),
+            'publication_condition': publication.get_condition_display(),
+            'publication_price': publication.price,
+        }
+        
+        try:
+            # Renderizar el template del correo
+            html_message = render_to_string('email/new_message.html', context)
+            plain_message = strip_tags(html_message)
+            
+            # Enviar el correo
+            send_mail(
+                subject='Nuevo mensaje de un usuario en Doreco',
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[publication.owner.email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+            
+            return Response({
+                "message": "Mensaje enviado exitosamente",
+                "recipient": publication.owner.username,
+                "publication_title": publication.title
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {"error": f"Error al enviar el correo: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
