@@ -22,7 +22,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """Permisos: lectura para todos, escritura solo para autenticados"""
-        if self.action in ['list', 'retrieve']:
+        if self.action in ['list', 'retrieve', 'public_info']:
             self.permission_classes = [permissions.AllowAny]
         else:
             self.permission_classes = [permissions.IsAuthenticated]
@@ -158,10 +158,9 @@ class PublicationViewSet(viewsets.ModelViewSet):
         try:
             publication = self.get_object()
             
-            # Construir la URL de la publicación
-            # Usar BASE_URL desde settings o construir URL base
-            base_url = getattr(settings, 'BASE_URL', 'http://localhost:3000')
-            publication_url = f"{base_url}/publication/{publication.id}"
+            # Construir la URL pública del front
+            front_base_url = getattr(settings, 'FRONT_BASE_URL', 'http://localhost:3000')
+            publication_url = f"{front_base_url}/objects/public/{publication.id}"
             
             # Crear el código QR
             qr = qrcode.QRCode(
@@ -205,6 +204,16 @@ class PublicationViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": f"Error al generar QR: {str(e)}"}, 
                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny], authentication_classes=[], url_path='public')
+    def public_info(self, request, pk=None):
+        """Obtener información pública de una publicación por UUID, sin autenticación real (ignora header Authorization)"""
+        try:
+            publication = get_object_or_404(Publication, pk=pk, is_active=True, status='available')
+            serializer = PublicationSerializer(publication, context={'request': request})
+            return Response(serializer.data)
+        except Publication.DoesNotExist:
+            return Response({"error": "Publicación no encontrada"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
