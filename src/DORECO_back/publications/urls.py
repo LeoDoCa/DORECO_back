@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/publications/<uuid:pk>/change-status/', PublicationViewSet.as_view({'patch': 'change_status'}), name='publications-change-status'),
     path('api/publications/<uuid:pk>/generate-qr/', PublicationViewSet.as_view({'get': 'generate_qr'}), name='publications-generate-qr'),
     path('api/publications/<uuid:pk>/public/', PublicationViewSet.as_view({'get': 'public_info'}), name='publications-public-info'),
+    path('api/publications/<uuid:pk>/send-message/', PublicationViewSet.as_view({'post': 'send_message'}), name='publications-send-message'),
     
     # URLs adicionales para favoritos
     path('api/favorites/add/', FavoriteViewSet.as_view({'post': 'add_favorite'}), name='favorites-add'),

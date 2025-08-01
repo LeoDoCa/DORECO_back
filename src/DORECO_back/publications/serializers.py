@@ -195,4 +195,20 @@ class MyPublicationsSerializer(serializers.ModelSerializer):
             'publication_type', 'price', 'status', 'is_active', 
             'created_at', 'updated_at', 'favorites_count'
         ]
-        read_only_fields = fields 
+        read_only_fields = fields
+
+
+class SendMessageSerializer(serializers.Serializer):
+    """Serializer para validar los datos del mensaje enviado al propietario de una publicación"""
+    message = serializers.CharField(
+        max_length=1000, 
+        help_text="Mensaje a enviar al propietario de la publicación"
+    )
+    
+    def validate_message(self, value):
+        """Validar que el mensaje no esté vacío y tenga contenido útil"""
+        if not value or not value.strip():
+            raise serializers.ValidationError("El mensaje no puede estar vacío.")
+        if len(value.strip()) < 10:
+            raise serializers.ValidationError("El mensaje debe tener al menos 10 caracteres.")
+        return value.strip() 
