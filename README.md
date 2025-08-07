@@ -35,8 +35,50 @@ DORECO_back/
 │   │   ├── settings.py     
 │   │   ├── urls.py       
 │   │   └── wsgi.py
-│   ├── .gitignore         
-│   └── manage.py
+│   ├── categories/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── tests.py    
+│   │   ├── urls.py       
+│   │   └── views.py
+│   ├── publications/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── tests.py    
+│   │   ├── urls.py       
+│   │   └── views.py
+│   ├── reports/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── tests.py    
+│   │   ├── urls.py       
+│   │   └── views.py
+│   ├── templates/email/
+│   │   ├── new_message.html  
+│   │   ├── password_reset.html       
+│   │   └── password_reset.txt
+│   ├── users/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── tests.py    
+│   │   ├── urls.py
+│   │   ├── utils.py   
+│   │   └── views.py
+│   ├── .gitignore
+│   ├── manage.py      
+│   └── requirements.txt
 ├── tests/
 |   └── test_tests.txt             
 └── README.md             
@@ -61,7 +103,7 @@ cd .\DORECO_back\
 # \src\DORECO_back\DORECO_back\settings.py
 
 # 4. Aplicar migraciones
-python manage.py makemigrations
+python manage.py makemigrations categories publications reports users
 python manage.py migrate
 
 # 5. Ejecutar el servidor de desarrollo
