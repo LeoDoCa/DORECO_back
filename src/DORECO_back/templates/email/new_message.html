@@ -6,101 +6,248 @@
     <title>Nuevo mensaje en Doreco</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
             line-height: 1.6;
-            color: #333;
+        }
+        
+        .container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 10px;
-        }
-        .content {
             background-color: #ffffff;
-            padding: 20px;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .message-box {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-left: 4px solid #007bff;
-            margin: 15px 0;
-            border-radius: 4px;
-        }
-        .contact-info {
-            background-color: #e7f3ff;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 15px 0;
-        }
-        .footer {
+        
+        .header {
+            background: linear-gradient(135deg, #08284e 0%, #046aa2 100%);
+            padding: 40px 30px;
             text-align: center;
-            color: #6c757d;
-            font-size: 14px;
-            padding: 20px;
-            border-top: 1px solid #dee2e6;
         }
+        
+        .logo {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            margin: 8px 0 0 0;
+            font-weight: 400;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            color: #08284e;
+            margin: 0 0 20px 0;
+        }
+        
+        .intro-text {
+            font-size: 16px;
+            color: #475569;
+            margin: 0 0 25px 0;
+        }
+        
         .highlight {
-            color: #007bff;
-            font-weight: bold;
+            color: #046aa2;
+            font-weight: 600;
+        }
+        
+        .message-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-left: 4px solid #046aa2;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 25px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .message-box h4 {
+            color: #08284e;
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .message-box p {
+            margin: 0;
+            font-size: 15px;
+            color: #475569;
+            font-style: italic;
+            padding: 8px 0;
+        }
+        
+        .contact-info {
+            background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+            border: 1px solid #046aa2;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        
+        .contact-info h3 {
+            color: #08284e;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .contact-info p {
+            margin: 8px 0;
+            font-size: 15px;
+            color: #475569;
+        }
+        
+        .contact-info strong {
+            color: #08284e;
+            font-weight: 600;
+        }
+        
+        .publication-info {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        
+        .publication-info h3 {
+            color: #92400e;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .publication-info p {
+            margin: 8px 0;
+            font-size: 15px;
+            color: #78716c;
+        }
+        
+        .publication-info strong {
+            color: #92400e;
+            font-weight: 600;
+        }
+        
+        .contact-instructions {
+            background-color: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            border-left: 3px solid #046aa2;
+        }
+        
+        .contact-instructions p {
+            margin: 0;
+            font-size: 15px;
+            color: #475569;
+        }
+        
+        .footer {
+            background-color: #f8fafc;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .footer-text {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0 0 8px 0;
+        }
+        
+        .footer-brand {
+            font-weight: 600;
+            color: #08284e;
+        }
+        
+        .footer-disclaimer {
+            color: #94a3b8;
+            font-size: 12px;
+            margin: 15px 0 0 0;
+            font-style: italic;
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .container {
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .header, .content, .footer {
+                padding: 30px 20px;
+            }
+            
+            .logo {
+                font-size: 28px;
+            }
+            
+            .message-box, .contact-info, .publication-info, .contact-instructions {
+                margin: 20px 0;
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">DORECO</div>
-        <p>Sistema de intercambio universitario</p>
-    </div>
-    
-    <div class="content">
-        <h2>¡Hola {{ owner_name }}!</h2>
-        
-        <p>El usuario <span class="highlight">{{ sender_name }}</span> te ha escrito:</p>
-        
-        <div class="message-box">
-            <p><strong>Mensaje:</strong></p>
-            <p>"{{ message }}"</p>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">DORECO</h1>
+            <p class="subtitle">Sistema de Donación y Reciclaje en la Comunidad Universitaria</p>
         </div>
         
-        <div class="contact-info">
-            <h3>Información de contacto:</h3>
-            <p><strong>Email:</strong> {{ sender_email }}</p>
-            {% if sender_phone %}
-            <p><strong>Teléfono:</strong> {{ sender_phone }}</p>
-            {% endif %}
+        <div class="content">
+            <h2 class="greeting">¡Hola {{ owner_name }}!</h2>
+            
+            <p class="intro-text">El usuario <span class="highlight">{{ sender_name }}</span> te ha escrito:</p>
+            
+            <div class="message-box">
+                <h4>Mensaje:</h4>
+                <p>"{{ message }}"</p>
+            </div>
+            
+            <div class="contact-info">
+                <h3>Información de contacto</h3>
+                <p><strong>Email:</strong> {{ sender_email }}</p>
+                {% if sender_phone %}
+                <p><strong>Teléfono:</strong> {{ sender_phone }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="contact-instructions">
+                <p>Puedes contactarte con {{ sender_name }} {% if sender_phone %}al número de teléfono {{ sender_phone }} o {% endif %}al correo electrónico {{ sender_email }}{% if not sender_phone %} (si está disponible){% endif %}.</p>
+            </div>
+            
+            <div class="publication-info">
+                <h3>Publicación de interés</h3>
+                <p><strong>Título:</strong> {{ publication_title }}</p>
+                <p><strong>Tipo:</strong> {{ publication_type }}</p>
+                <p><strong>Condición:</strong> {{ publication_condition }}</p>
+                {% if publication_price %}
+                <p><strong>Precio:</strong> ${{ publication_price }}</p>
+                {% endif %}
+            </div>
         </div>
         
-        <p>Puedes contactarte con {{ sender_name }} {% if sender_phone %}al número de teléfono {{ sender_phone }} o {% endif %}al correo electrónico {{ sender_email }}{% if not sender_phone %} (si está disponible){% endif %}.</p>
-        
-        <div class="publication-info" style="background-color: #fff3cd; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #ffc107;">
-            <h3>Publicación de interés:</h3>
-            <p><strong>Título:</strong> {{ publication_title }}</p>
-            <p><strong>Tipo:</strong> {{ publication_type }}</p>
-            <p><strong>Condición:</strong> {{ publication_condition }}</p>
-            {% if publication_price %}
-            <p><strong>Precio:</strong> ${{ publication_price }}</p>
-            {% endif %}
+        <div class="footer">
+            <p class="footer-text">Gracias,<br>
+            <span class="footer-brand">El equipo de DORECO</span></p>
+            
+            <p class="footer-disclaimer">Este es un correo automático, por favor no respondas a esta dirección.</p>
         </div>
-    </div>
-    
-    <div class="footer">
-        <p>Gracias,<br>
-        <strong>El equipo de Doreco</strong></p>
-        
-        <p><small>Este es un correo automático, por favor no respondas a esta dirección.</small></p>
     </div>
 </body>
 </html>
