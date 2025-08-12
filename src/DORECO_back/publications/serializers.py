@@ -191,7 +191,7 @@ class MyPublicationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Publication
         fields = [
-            'id', 'title', 'description', 'category_name', 'condition',
+            'id', 'title', 'description', 'category_name', 'condition', 'image1',
             'publication_type', 'price', 'status', 'is_active', 
             'created_at', 'updated_at', 'favorites_count'
         ]
