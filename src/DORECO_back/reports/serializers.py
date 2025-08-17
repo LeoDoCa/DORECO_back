@@ -104,6 +104,6 @@ class ReportListSerializer(serializers.ModelSerializer):
         model = Report
         fields = [
             'id', 'publication_title', 'reported_by_username', 'publication_id','reason',
-            'status', 'created_at'
+            'status', 'created_at', 'description'
         ]
         read_only_fields = fields 
