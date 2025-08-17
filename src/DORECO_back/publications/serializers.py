@@ -1,3 +1,4 @@
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Publication, Favorite
@@ -91,20 +92,45 @@ class PublicationSerializer(serializers.ModelSerializer):
 
 
 class PublicationUpdateSerializer(serializers.ModelSerializer):
-    """Serializer específico para actualizar publicaciones"""
+    """Serializer específico para actualizar publicaciones (ahora incluye manejo de imágenes)"""
     keywords_list = serializers.ListField(
         child=serializers.CharField(max_length=100),
         write_only=True,
         required=False
     )
-    
+    image1 = serializers.ImageField(required=False, allow_null=True)
+    image2 = serializers.ImageField(required=False, allow_null=True)
+    image3 = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = Publication
         fields = [
             'title', 'description', 'category', 'condition',
             'publication_type', 'price', 'keywords', 'keywords_list', 'duration',
-            'status', 'is_active'
+            'status', 'is_active',
+            'image1', 'image2', 'image3'
         ]
+
+    def validate(self, attrs):
+        # Validar que quede al menos una imagen tras la actualización
+        # Combina instancias anteriores y nuevos datos
+        image_fields = ['image1', 'image2', 'image3']
+        imgs = []
+        instance = getattr(self, 'instance', None)
+        for field in image_fields:
+            # Lo nuevo enviado o la instancia previa
+            if field in attrs:
+                if attrs[field] is not None:
+                    imgs.append(attrs[field])
+            elif instance is not None:
+                img_from_instance = getattr(instance, field, None)
+                if img_from_instance:
+                    imgs.append(img_from_instance)
+        if len(imgs) < 1:
+            raise serializers.ValidationError("Debes dejar al menos una imagen.")
+        if len(imgs) > 3:
+            raise serializers.ValidationError("No puedes subir más de 3 imágenes.")
+        return attrs
 
     def validate_price(self, value):
         publication_type = self.initial_data.get('publication_type', self.instance.publication_type)
@@ -124,7 +150,13 @@ class PublicationUpdateSerializer(serializers.ModelSerializer):
         keywords_list = validated_data.pop('keywords_list', None)
         if keywords_list is not None:
             validated_data['keywords'] = ', '.join(keywords_list)
-        
+        for img_field in ['image1', 'image2', 'image3']:
+            if img_field in validated_data:
+                # Interpreta '' o None como eliminación (set None), útil para sincronía JS
+                if validated_data[img_field] == '' or validated_data[img_field] is None:
+                    setattr(instance, img_field, None)
+                else:
+                    setattr(instance, img_field, validated_data[img_field])
         return super().update(instance, validated_data)
 
 
@@ -211,4 +243,4 @@ class SendMessageSerializer(serializers.Serializer):
             raise serializers.ValidationError("El mensaje no puede estar vacío.")
         if len(value.strip()) < 10:
             raise serializers.ValidationError("El mensaje debe tener al menos 10 caracteres.")
-        return value.strip() 
+        return value.strip()
