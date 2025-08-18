@@ -133,15 +133,15 @@ class PublicationUpdateSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_price(self, value):
-        publication_type = self.initial_data.get('publication_type', self.instance.publication_type)
+        publication_type = self.initial_data.get('publication_type', self.instance.publication_type if self.instance else None)
         if publication_type == 'sale' and (not value or value <= 0):
             raise serializers.ValidationError("El precio es requerido para publicaciones de venta.")
-        elif publication_type in ['donation', 'loan'] and value:
+        elif publication_type in ['donation', 'loan'] and value and value > 0:
             raise serializers.ValidationError("Las donaciones y préstamos no deben tener precio.")
         return value
 
     def validate_duration(self, value):
-        publication_type = self.initial_data.get('publication_type', self.instance.publication_type)
+        publication_type = self.initial_data.get('publication_type', self.instance.publication_type if self.instance else None)
         if publication_type == 'loan' and not value:
             raise serializers.ValidationError("La duración es requerida para préstamos.")
         return value
@@ -150,6 +150,20 @@ class PublicationUpdateSerializer(serializers.ModelSerializer):
         keywords_list = validated_data.pop('keywords_list', None)
         if keywords_list is not None:
             validated_data['keywords'] = ', '.join(keywords_list)
+        
+        # Manejar el precio automáticamente según el tipo de publicación
+        publication_type = validated_data.get('publication_type', instance.publication_type)
+        
+        # Si cambia a donación o préstamo, forzar precio a 0
+        if publication_type in ['donation', 'loan']:
+            validated_data['price'] = None
+        # Si cambia a venta y no se proporcionó precio, mantener el precio actual
+        elif publication_type == 'sale' and 'price' not in validated_data:
+            # Si el precio actual es 0 y ahora es venta, requerirá que se establezca manualmente
+            if instance.price == 0:
+                pass  # Se mantendrá en 0, pero la validación puede requerir que se establezca
+        
+        # Manejar imágenes
         for img_field in ['image1', 'image2', 'image3']:
             if img_field in validated_data:
                 # Interpreta '' o None como eliminación (set None), útil para sincronía JS
@@ -157,8 +171,9 @@ class PublicationUpdateSerializer(serializers.ModelSerializer):
                     setattr(instance, img_field, None)
                 else:
                     setattr(instance, img_field, validated_data[img_field])
+        
         return super().update(instance, validated_data)
-
+    
 
 class PublicationListSerializer(serializers.ModelSerializer):
     """Serializer simplificado para listar publicaciones"""
